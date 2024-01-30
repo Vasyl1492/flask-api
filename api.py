@@ -25,11 +25,11 @@ db = SQLAlchemy(app)
 
 class Student(db.Model):
     __tablename__ = "student"
-    id = db.Column(db.Integer, primery_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(128), unique=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     age = db.Column(db.Integer, nullable=False)
-    collphone = db.Column(db.String(13), unique=True, nullable=False)
+    cellphone = db.Column(db.String(13), unique=True, nullable=False)
 
     @classmethod
     def get_all(cls):
@@ -38,7 +38,7 @@ class Student(db.Model):
     @classmethod
     def get_by_id(cls, id):
         return cls.query.get_or_404(id)
-    
+
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -47,14 +47,14 @@ class Student(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-class StudentScrema(Schema):
+class StudentSchema(Schema):
     id = fields.Integer()
     name = fields.Str()
     email = fields.Str()
     age = fields.Integer()
     cellphone = fields.Str()
 
-student_screma = StudentScrema    
+student_schema = StudentSchema
 
 @app.route('/', methods = ['GET'])
 def home():
@@ -64,36 +64,38 @@ def home():
 def api_main():
     return jsonify('Hello, World!'), 200
 
-@app.route('/api/students', methods = ['GET'])
+@app.route('/api/students', methods=['GET'])
 def get_all_students():
-    students = Student.get.all()
-    student_list = StudentScrema(many=True)
+    students = Student.get_all()
+    student_list = StudentSchema(many=True)
     response = student_list.dump(students)
     return jsonify(response), 200
 
 @app.route('/api/students/get/<int:id>', methods = ['GET'])
 def get_student(id):
     student_info = Student.get_by_id(id)
-    serializer = StudentScrema()
+    serializer = StudentSchema()
     response = serializer.dump(student_info)
     return jsonify(response), 200
 
 @app.route('/api/students/add', methods = ['POST'])
-def add_student(id):
+def add_student():
     json_data = request.get_json()
     new_student = Student(
         name= json_data.get('name'),
-        email= json_data.get('email'),
-        age= json_data.get('age'),
-        cellphone= json_data.get('cellphone')
+        email=json_data.get('email'),
+        age=json_data.get('age'),
+        cellphone=json_data.get('cellphone')
     )
     new_student.save()
-    serializer = StudentScrema()
+    serializer = StudentSchema()
     data = serializer.dump(new_student)
     return jsonify(data), 201
 
-if __name__== '__main__':
+if __name__ == '__main__':
+    engine = create_engine(DB_URI, echo=True)
     if not database_exists(engine.url):
         create_database(engine.url)
-    db.create_all()
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
