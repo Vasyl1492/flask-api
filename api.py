@@ -1,4 +1,3 @@
-from asyncio.proactor_events import _ProactorBasePipeTransport
 import os
 
 from flask import Flask, jsonify, request
@@ -35,7 +34,7 @@ class Student(db.Model):
     @classmethod
     def get_all(cls):
         return cls.query.all()
-
+    
     @classmethod
     def get_by_id(cls, id):
         return cls.query.get_or_404(id)
@@ -54,6 +53,8 @@ class StudentSchema(Schema):
     email = fields.Str()
     age = fields.Integer()
     cellphone = fields.Str()
+
+student_schema = StudentSchema
 
 @app.route('/', methods = ['GET'])
 def home():
@@ -92,7 +93,9 @@ def add_student():
     return jsonify(data), 201
 
 if __name__ == '__main__':
+    engine = create_engine(DB_URI, echo=True)
     if not database_exists(engine.url):
         create_database(engine.url)
-    db.create_all()
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
