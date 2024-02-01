@@ -92,6 +92,48 @@ def add_student():
     data = serializer.dump(new_student)
     return jsonify(data), 201
 
+@app.route('/api/students/change/<int:id>', methods=['PUT'])
+def update_student(id):
+   json_data = request.get_json()
+   student = Student.get_by_id(id)
+
+   # Update student attributes based on provided JSON data
+   student.name = json_data.get('name', student.name)  # Update name if provided, otherwise keep existing
+   student.email = json_data.get('email', student.email)
+   student.age = json_data.get('age', student.age)
+   student.cellphone = json_data.get('cellphone', student.cellphone)
+
+   student.save()
+   serializer = StudentSchema()
+   data = serializer.dump(student)
+   return jsonify(data), 200
+    
+@app.route('/api/students/modify/<int:id>', methods=['PATCH'])
+def modify_student(id):
+    json_data = request.get_json()
+    student = Student.get_by_id(id)
+
+    # Update only specified attributes in the JSON data
+    if 'name' in json_data:
+        student.name = json_data['name']
+    if 'email' in json_data:
+        student.email = json_data['email']
+    if 'age' in json_data:
+        student.age = json_data['age']
+    if 'cellphone' in json_data:
+        student.cellphone = json_data['cellphone']
+
+    student.save()
+    serializer = StudentSchema()
+    data = serializer.dump(student)
+    return jsonify(data), 200 
+
+@app.route('/api/deleteStudent/<int:id>', methods=['DELETE'])
+def delete_student(id):
+    student = Student.get_by_id(id)
+    student.delete()
+    return jsonify({'message': 'Student deleted successfully'}), 204
+
 if __name__ == '__main__':
     engine = create_engine(DB_URI, echo=True)
     if not database_exists(engine.url):
