@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: api
+    image: vasyl2112/study:v25
+    ports:
+      - '5000:5000'
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - events_api
+
+  db:
+    container_name: mysql-server
+    image: mysql:latest
+    ports:
+      - '3306:3306'
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    healthcheck:
+      #test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - /opt/api_vdb:/var/lib/mysql
+    networks:
+      - events_api
+
+
+volumes:
+  api_vdb:
+
+networks:
+  events_api:
+    name: apishka
