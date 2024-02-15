@@ -135,7 +135,7 @@ def delete_student(id):
     return jsonify({'message': 'Student deleted successfully'}), 204
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000,threaded=True, debug=True)
+    app.run(host="0.0.0.0", port=5000, threaded=True, debug=True)
     engine = create_engine(DB_URI, echo=True)
     if not database_exists(engine.url):
         create_database(engine.url)

@@ -1,4 +1,4 @@
-FROM python:alpine as campiler
+FROM python:3-alpine as campiler
 
 RUN apk update && apk add --no-cache git && apk add bash
 
